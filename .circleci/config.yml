@@ -60,7 +60,7 @@ jobs:
             pwd && ls -a
             apk add --update ansible
       - attach_workspace:
-          at: ~/
+          at: ~/project
       - run:
           name: Configure server
           command: |
