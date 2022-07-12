@@ -148,6 +148,7 @@ jobs:
           name: delete previous stack that created the bucket 
           command: |
             OldStack=$(cat ~/stackname.txt)
+            echo $OldStack
             aws cloudformation delete-stack --stack-name $OldStack
 
 workflows:
