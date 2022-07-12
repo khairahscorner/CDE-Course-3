@@ -19,19 +19,19 @@ commands:
             aws cloudformation delete-stack --stack-name stack-$CIRCLE_WORKFLOW_ID           
 
 jobs:
-  deploy_infra:
-    executor: aws-cli/default
-    working_directory: ~/project
-    steps:
-      - aws-cli/setup:
-          aws-access-key-id: UDACITY_ACCESS
-          aws-secret-access-key: UDACITY_SECRET
-          aws-region: AWS_REGION
-      - checkout
-      - run:
-          name: Deploy Cloudformation stack
-          command: |
-            aws cloudformation deploy --template-file template.yml --parameter-overrides file://template.json --stack-name stack-$CIRCLE_WORKFLOW_ID --region us-east-1
+  # deploy_infra:
+  #   executor: aws-cli/default
+  #   working_directory: ~/project
+  #   steps:
+  #     - aws-cli/setup:
+  #         aws-access-key-id: UDACITY_ACCESS
+  #         aws-secret-access-key: UDACITY_SECRET
+  #         aws-region: AWS_REGION
+  #     - checkout
+  #     - run:
+  #         name: Deploy Cloudformation stack
+  #         command: |
+  #           aws cloudformation deploy --template-file template.yml --parameter-overrides file://template.json --stack-name stack-$CIRCLE_WORKFLOW_ID --region us-east-1
 
   # configure_infra:
   #   docker:
@@ -53,8 +53,8 @@ jobs:
   #         name: Configure server
   #         command: |
   #           ansible-playbook main-remote.yml -i inventory
-      
-  run_smoke_tests:
+
+  create_new_bucket:
     executor: aws-cli/default
     steps:
       - aws-cli/setup:
@@ -63,23 +63,99 @@ jobs:
           aws-region: AWS_REGION
       - checkout
       - run:
-          name: test job
+        name: Create new bucket
+        command: |
+          aws cloudformation deploy --template-file createBucket.yml --parameter-overrides S3BucketName="newBucket-${CIRCLE_WORKFLOW_ID:0:7}" --stack-name createNewBucket-${CIRCLE_WORKFLOW_ID:0:7}
+      - run: aws s3 sync . s3://newBucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
+
+  get_last_deployment_id:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup:
+          aws-access-key-id: UDACITY_ACCESS
+          aws-secret-access-key: UDACITY_SECRET
+          aws-region: AWS_REGION
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Fetch and save the old pipeline ID (bucket name) responsible for the last release.
           command: |
-            if curl -s --head $TEST_URL
-            then
-              exit 0
-            else
-              exit 1
-            fi
-      - destroy_infra
+            aws cloudformation list-exports --query "Exports[?Name==\`Pipeline-ID\`].Value" --no-paginate --output text > ~/textfile.txt
+      - persist_to_workspace:
+          root: ~/
+          paths: 
+            - textfile.txt
+
+  promote_to_production:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup:
+          aws-access-key-id: UDACITY_ACCESS
+          aws-secret-access-key: UDACITY_SECRET
+          aws-region: AWS_REGION
+      - checkout
+      - run:
+          name: Execute CloudFront template
+          command: |
+            aws cloudformation deploy --template-file createCloudfront.yml --stack-name production-distro --parameter-overrides S3BucketName="newBucket-${CIRCLE_WORKFLOW_ID:0:7}"
+  
+  delete_old_bucket:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup:
+          aws-access-key-id: UDACITY_ACCESS
+          aws-secret-access-key: UDACITY_SECRET
+          aws-region: AWS_REGION
+      - checkout
+      - run: yum install -y tar gzip
+      - attach_workspace:
+        at: ~/
+      - run:
+          name: Destroy the previous S3 bucket. 
+          command: |
+            export OldBucketID=$(cat ~/textfile.txt)
+            aws s3 rm "s3://${OldBucketID}" --recursive
+
+  # run_smoke_tests:
+  #   executor: aws-cli/default
+  #   steps:
+  #     - aws-cli/setup:
+  #         aws-access-key-id: UDACITY_ACCESS
+  #         aws-secret-access-key: UDACITY_SECRET
+  #         aws-region: AWS_REGION
+  #     - checkout
+  #     - run:
+  #         name: test job
+  #         command: |
+  #           if curl -s --head $TEST_URL
+  #           then
+  #             exit 0
+  #           else
+  #             exit 1
+  #           fi
+  #     - destroy_infra
 
 workflows:
-  workflow-1:
+  blue-green-workflow:
     jobs:
-      - deploy_infra
+      # - deploy_infra:
+      #     filters:
+      #       branches:
+      #         only: master
       # - configure_infra:
       #     requires:
       #       - deploy_infra
-      - run_smoke_tests:
+      # - run_smoke_tests:
+      #     requires:
+      #       - deploy_infra
+      #       - configure_infra
+      
+      - create_new_bucket
+      - get_last_deployment_id
+      - promote_to_production:
+          requires: 
+            - create_new_bucket
+      - delete_old_bucket:
           requires:
-            - deploy_infra
+            - get_last_deployment_id
+            - promote_to_production
