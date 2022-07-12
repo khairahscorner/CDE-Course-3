@@ -14,7 +14,7 @@ commands:
       - run:
           name: Delete Cloudformation stack
           when: on_fail
-          command: echo "Destroying infrastructure by << parameters.authorName >>
+          command: echo "Destroying infrastructure by << parameters.authorName >>""
       - run:
           name: Now deleting stack
           command: |
