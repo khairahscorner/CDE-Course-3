@@ -49,7 +49,7 @@ jobs:
       - run:
           name: run sample test
           command: |
-            curl -s --head "https://blog.udacity.com"
+            if curl -s --head "https://blog.udacity.com"
             then
               return 0
             else
