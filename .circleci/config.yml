@@ -16,7 +16,7 @@ commands:
           when: on_fail
           command: |
             echo "Destroying infrastructure by << parameters.authorName >>"
-            aws cloudformation delete-stack --stack-name stack-$CIRCLE_WORKFLOW_ID           
+            aws cloudformation delete-stack --stack-name course3Stack           
 
 jobs:
   deploy_infra:
@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Deploy Cloudformation stack
           command: |
-            aws cloudformation deploy --template-file template.yml --parameter-overrides file://template.json --stack-name stack-$CIRCLE_WORKFLOW_ID --region us-east-1
+            aws cloudformation deploy --template-file template.yml --parameter-overrides file://template.json --stack-name course3Stack --region us-east-1
       - run:
           name: fetch instance DNS name
           command: |
