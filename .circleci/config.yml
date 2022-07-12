@@ -34,6 +34,7 @@ jobs:
       - run:
           name: Configure server
           command: |
+            echo "the problem is this"
             ansible-playbook main-remote.yml -i inventory
       
 workflows:
