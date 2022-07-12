@@ -32,7 +32,7 @@
         echo "Creating directory"
         mkdir ~/web
       fi
-      exit 0
+      return 0
 
   - name: "copy server file"
     copy:
