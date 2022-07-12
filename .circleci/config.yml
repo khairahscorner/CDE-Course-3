@@ -88,6 +88,7 @@ jobs:
 
   create_new_bucket:
     executor: aws-cli/default
+    working_directory: ~/project
     steps:
       - aws-cli/setup:
           aws-access-key-id: UDACITY_ACCESS
@@ -98,10 +99,6 @@ jobs:
           name: Create new bucket
           command: |
             aws cloudformation deploy --template-file createBucket.yml --parameter-overrides S3BucketName="newbucket-${CIRCLE_WORKFLOW_ID:0:7}" --stack-name createNewBucket-${CIRCLE_WORKFLOW_ID:0:7}
-      - persist_to_workspace:
-          root: ~/
-          paths: 
-            - stackname.txt
       - run: aws s3 sync . s3://newbucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
 
   get_last_deployment_id:
