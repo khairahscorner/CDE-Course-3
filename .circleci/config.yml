@@ -59,12 +59,13 @@ jobs:
           command: |
             pwd && ls -a
             apk add --update ansible
+      - run: apk add --update tar gzip
       - attach_workspace:
           at: ~/project
       - run:
           name: Configure server
           command: |
-            ansible-playbook main-remote.yml -i inventory.txt
+            ansible-playbook main-remote.yml -i ~/project/inventory.txt
       - destroy_infra
 
   # run_smoke_tests:
