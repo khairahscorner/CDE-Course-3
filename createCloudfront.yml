@@ -6,6 +6,9 @@ Parameters:
   S3BucketName:
     Description: EXISTING S3 BUCKET NAME
     Type: String
+  StackName:
+    Description: EXISTING stack
+    Type: String
 
 Resources:
   # OAIdentity:
@@ -54,3 +57,7 @@ Outputs:
     Value: !Sub ${S3BucketName}
     Export:
       Name: Pipeline-ID
+  StackName:
+    Value: !Sub ${StackName}
+    Export:
+      Name: Stack-ID
