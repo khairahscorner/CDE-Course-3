@@ -34,3 +34,5 @@ Resources:
 Outputs:
   StackName:
     Value: !Ref AWS::StackName
+    Export:
+      Name: StackName
