@@ -55,12 +55,17 @@ jobs:
   #           ansible-playbook main-remote.yml -i inventory
       
   run_smoke_tests:
-    docker:
-      - image: amazon/aws-cli
+    executor: aws-cli/default
     steps:
+      - aws-cli/setup:
+          aws-access-key-id: UDACITY_ACCESS
+          aws-secret-access-key: UDACITY_SECRET
+          aws-region: AWS_REGION
+      - checkout
       - run:
           name: test job to force failure
-          command: return 1
+          command: |
+            return 1
       - destroy_infra
 
 workflows:
