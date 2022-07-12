@@ -41,7 +41,7 @@ jobs:
       
   run_smoke_tests:
     docker:
-      - image: alphine:latest
+      - image: alphine:3:16
     steps:
       - run:
           name: install curl
