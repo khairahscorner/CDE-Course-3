@@ -63,9 +63,14 @@ jobs:
           aws-region: AWS_REGION
       - checkout
       - run:
-          name: test job to force failure
+          name: test job
           command: |
-            return 0
+            if curl -s --head $TEST_URL
+            then
+              return 0
+            else
+              return 1
+            fi
       - destroy_infra
 
 workflows:
