@@ -27,6 +27,9 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["c4:7f:58:83:f1:c3:ec:1e:ad:dd:48:65:1e:21:d3:34"]
       - run:
+          name: install openssh
+          command: apk add --update openssh
+      - run:
           name: Install dependencies
           command: |
             pwd && ls -a
