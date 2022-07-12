@@ -35,7 +35,7 @@ jobs:
           name: Configure server
           command: |
             echo "the problem is this"
-            ansible-playbook main-remote.yml -i inventory
+            ansible-playbook main-remote.yml -i inventory --private-key $KEY_FILE
       
 workflows:
   workflow-1:
