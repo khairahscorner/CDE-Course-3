@@ -56,3 +56,9 @@ Resources:
       Tags:
         - Key: Name
           Value: Course3EC2
+
+Outputs:
+  InstanceIP:
+    Value: !GetAtt EC2Instance.PublicDnsName
+    Export:
+      Name: InstanceDNS
