@@ -11,11 +11,13 @@ commands:
         type: string
         default: $NAME
     steps:
-      - run: echo "Destroying infrastructure by << parameters.authorName >>
       - run:
           name: Delete Cloudformation stack
+          when: on_fail
+          command: echo "Destroying infrastructure by << parameters.authorName >>
+      - run:
+          name: Now deleting stack
           command: |
-            echo "now deleting stack"
             aws cloudformation delete-stack --stack-name course3Stack
 
 jobs:
@@ -65,8 +67,7 @@ jobs:
           name: test job to force failure
           command: |
             return 1
-      - destroy_infra:
-          when: on_fail
+      - destroy_infra
 
 workflows:
   workflow-1:
