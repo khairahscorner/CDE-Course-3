@@ -35,4 +35,4 @@ Outputs:
   StackName:
     Value: !Ref AWS::StackName
     Export:
-      Name: StackName
+      Name: !Sub "StackName-${AWS::StackName}"
