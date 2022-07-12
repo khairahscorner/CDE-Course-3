@@ -32,27 +32,40 @@ jobs:
           name: Deploy Cloudformation stack
           command: |
             aws cloudformation deploy --template-file template.yml --parameter-overrides file://template.json --stack-name stack-$CIRCLE_WORKFLOW_ID --region us-east-1
+      - run:
+          name: fetch instance DNS name
+          command: |
+            echo "[all]" > inventory.txt
+            aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --filters "Name=tag:name, Values=Course3EC2" --output text >> inventory.txt
+      - persist_to_workspace:
+          root:  ~/
+          paths:
+            - inventory.txt
+      - destroy_infra
 
-  # configure_infra:
-  #   docker:
-  #     - image: python:3.8-alpine3.15
-  #   working_directory: ~/project
-  #   steps:
-  #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: ["c4:7f:58:83:f1:c3:ec:1e:ad:dd:48:65:1e:21:d3:34"]
-  #     - run:
-  #         name: install openssh
-  #         command: apk add --update openssh
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           pwd && ls -a
-  #           apk add --update ansible
-  #     - run:
-  #         name: Configure server
-  #         command: |
-  #           ansible-playbook main-remote.yml -i inventory
+  configure_infra:
+    docker:
+      - image: python:3.8-alpine3.15
+    working_directory: ~/project
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["c4:7f:58:83:f1:c3:ec:1e:ad:dd:48:65:1e:21:d3:34"]
+      - run:
+          name: install openssh
+          command: apk add --update openssh
+      - run:
+          name: Install dependencies
+          command: |
+            pwd && ls -a
+            apk add --update ansible
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook main-remote.yml -i inventory.txt
+      - destroy_infra
 
   # run_smoke_tests:
   #   executor: aws-cli/default
@@ -144,9 +157,9 @@ workflows:
           filters:
             branches:
               only: master
-      # - configure_infra:
-      #     requires:
-      #       - deploy_infra
+      - configure_infra:
+          requires:
+            - deploy_infra
       # - run_smoke_tests:
       #     requires:
       #       - deploy_infra

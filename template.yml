@@ -53,3 +53,6 @@ Resources:
             - !Ref WebServerSG
           SubnetId: !Ref SubnetID
       KeyName: course3
+      Tags:
+        - Key: Name
+          Value: Course3EC2
