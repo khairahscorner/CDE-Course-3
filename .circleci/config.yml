@@ -3,20 +3,35 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@3.1
 
+commands:
+  destroy_infra:
+    description: "Destroy created infrastructure if any job fails"
+    parameters:
+      authorName:
+        type: string
+        default: $NAME
+    steps:
+      - run: echo "Destroying infrastructure by << parameters.authorName >>
+      - run:
+          name: Delete Cloudformation stack
+          command: |
+            echo "now deleting stack"
+            aws cloudformation delete-stack --stack-name course3Stack
+
 jobs:
-  # deploy_infra:
-  #   executor: aws-cli/default
-  #   working_directory: ~/project
-  #   steps:
-  #     - aws-cli/setup:
-  #         aws-access-key-id: UDACITY_ACCESS
-  #         aws-secret-access-key: UDACITY_SECRET
-  #         aws-region: AWS_REGION
-  #     - checkout
-  #     - run:
-  #         name: Deploy Cloudformation stack
-  #         command: |
-  #           aws cloudformation deploy --template-file template.yml --parameter-overrides file://template.json --stack-name course3Stack --region us-east-1
+  deploy_infra:
+    executor: aws-cli/default
+    working_directory: ~/project
+    steps:
+      - aws-cli/setup:
+          aws-access-key-id: UDACITY_ACCESS
+          aws-secret-access-key: UDACITY_SECRET
+          aws-region: AWS_REGION
+      - checkout
+      - run:
+          name: Deploy Cloudformation stack
+          command: |
+            aws cloudformation deploy --template-file template.yml --parameter-overrides file://template.json --stack-name course3Stack --region us-east-1
 
   # configure_infra:
   #   docker:
@@ -47,23 +62,19 @@ jobs:
           name: install curl
           command: apk add --update curl
       - run:
-          name: run sample test
+          name: test job to force failure
           command: |
-            if curl -s --head $TEST_URL
-            then
-              return 0
-            else
-              return 1
-            fi
-      - run:
+            return 1
+      - destroy_infra:
           when: on_fail
-          command: echo "This pipeline failed"
 
 workflows:
   workflow-1:
     jobs:
-      # - deploy_infra
+      - deploy_infra
       # - configure_infra:
       #     requires:
       #       - deploy_infra
       - run_smoke_tests
+          requires:
+            - deploy_infra
