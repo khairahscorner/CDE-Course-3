@@ -45,10 +45,10 @@ jobs:
     steps:
       - run:
           name: install curl
-          cmd: apk add --update curl
+          command: apk add --update curl
       - run:
           name: run sample test
-          cmd: |
+          command: |
             curl -s --head "https://blog.udacity.com"
             then
               return 0
