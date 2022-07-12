@@ -28,6 +28,7 @@ jobs:
           fingerprints: ["c4:7f:58:83:f1:c3:ec:1e:ad:dd:48:65:1e:21:d3:34"]
       - run:
           name: Install dependencies
+          command: |
             pwd && ls -a
             apk add --update ansible
       - run:
