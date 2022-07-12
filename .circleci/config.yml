@@ -62,31 +62,30 @@ jobs:
       - run: apk add --update tar gzip
       - attach_workspace:
           at: ~/project
-      - run: cat ~/project/inventory.txt
-      # - run:
-      #     name: Configure server
-      #     command: |
-      #       ansible-playbook main-remote.yml -i ~/project/inventory.txt
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook main-remote.yml -i ~/project/inventory.txt
       - destroy_infra
 
-  # run_smoke_tests:
-  #   executor: aws-cli/default
-  #   steps:
-  #     - aws-cli/setup:
-  #         aws-access-key-id: UDACITY_ACCESS
-  #         aws-secret-access-key: UDACITY_SECRET
-  #         aws-region: AWS_REGION
-  #     - checkout
-  #     - run:
-  #         name: test job
-  #         command: |
-  #           if curl -s --head $TEST_URL
-  #           then
-  #             exit 0
-  #           else
-  #             exit 1
-  #           fi
-  #     - destroy_infra
+  run_smoke_tests:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup:
+          aws-access-key-id: UDACITY_ACCESS
+          aws-secret-access-key: UDACITY_SECRET
+          aws-region: AWS_REGION
+      - checkout
+      - run:
+          name: test job
+          command: |
+            if curl -s --head $TEST_URL
+            then
+              exit 0
+            else
+              exit 1
+            fi
+      - destroy_infra
 
   # create_new_bucket:
   #   executor: aws-cli/default
