@@ -76,6 +76,6 @@ workflows:
       # - configure_infra:
       #     requires:
       #       - deploy_infra
-      - run_smoke_tests
+      - run_smoke_tests:
           requires:
             - deploy_infra
