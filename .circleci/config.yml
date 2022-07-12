@@ -54,6 +54,25 @@ jobs:
   #         command: |
   #           ansible-playbook main-remote.yml -i inventory
 
+  # run_smoke_tests:
+  #   executor: aws-cli/default
+  #   steps:
+  #     - aws-cli/setup:
+  #         aws-access-key-id: UDACITY_ACCESS
+  #         aws-secret-access-key: UDACITY_SECRET
+  #         aws-region: AWS_REGION
+  #     - checkout
+  #     - run:
+  #         name: test job
+  #         command: |
+  #           if curl -s --head $TEST_URL
+  #           then
+  #             exit 0
+  #           else
+  #             exit 1
+  #           fi
+  #     - destroy_infra
+
   create_new_bucket:
     executor: aws-cli/default
     steps:
@@ -84,12 +103,9 @@ jobs:
             - textfile.txt
 
   promote_to_production:
-    executor: aws-cli/default
+    docker:
+      - image: amazon/aws-cli
     steps:
-      - aws-cli/setup:
-          aws-access-key-id: UDACITY_ACCESS
-          aws-secret-access-key: UDACITY_SECRET
-          aws-region: AWS_REGION
       - checkout
       - run:
           name: Execute CloudFront template
@@ -97,12 +113,9 @@ jobs:
             aws cloudformation deploy --template-file createCloudfront.yml --stack-name production-distro --parameter-overrides S3BucketName="newBucket-${CIRCLE_WORKFLOW_ID:0:7}"
   
   delete_old_bucket:
-    executor: aws-cli/default
+    docker:
+      - image: amazon/aws-cli
     steps:
-      - aws-cli/setup:
-          aws-access-key-id: UDACITY_ACCESS
-          aws-secret-access-key: UDACITY_SECRET
-          aws-region: AWS_REGION
       - checkout
       - run: yum install -y tar gzip
       - attach_workspace:
@@ -112,25 +125,6 @@ jobs:
           command: |
             export OldBucketID=$(cat ~/textfile.txt)
             aws s3 rm "s3://${OldBucketID}" --recursive
-
-  # run_smoke_tests:
-  #   executor: aws-cli/default
-  #   steps:
-  #     - aws-cli/setup:
-  #         aws-access-key-id: UDACITY_ACCESS
-  #         aws-secret-access-key: UDACITY_SECRET
-  #         aws-region: AWS_REGION
-  #     - checkout
-  #     - run:
-  #         name: test job
-  #         command: |
-  #           if curl -s --head $TEST_URL
-  #           then
-  #             exit 0
-  #           else
-  #             exit 1
-  #           fi
-  #     - destroy_infra
 
 workflows:
   blue-green-workflow:
