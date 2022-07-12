@@ -56,15 +56,11 @@ jobs:
       
   run_smoke_tests:
     docker:
-      - image: alpine:latest
+      - image: amazon/aws-cli
     steps:
       - run:
-          name: install curl
-          command: apk add --update curl
-      - run:
           name: test job to force failure
-          command: |
-            return 1
+          command: return 1
       - destroy_infra
 
 workflows:
