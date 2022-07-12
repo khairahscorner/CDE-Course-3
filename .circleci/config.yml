@@ -62,10 +62,11 @@ jobs:
       - run: apk add --update tar gzip
       - attach_workspace:
           at: ~/project
-      - run:
-          name: Configure server
-          command: |
-            ansible-playbook main-remote.yml -i ~/project/inventory.txt
+      - run: cat ~/project/inventory.txt
+      # - run:
+      #     name: Configure server
+      #     command: |
+      #       ansible-playbook main-remote.yml -i ~/project/inventory.txt
       - destroy_infra
 
   # run_smoke_tests:
