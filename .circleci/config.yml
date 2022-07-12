@@ -63,9 +63,9 @@ jobs:
           aws-region: AWS_REGION
       - checkout
       - run:
-        name: Create new bucket
-        command: |
-          aws cloudformation deploy --template-file createBucket.yml --parameter-overrides S3BucketName="newBucket-${CIRCLE_WORKFLOW_ID:0:7}" --stack-name createNewBucket-${CIRCLE_WORKFLOW_ID:0:7}
+          name: Create new bucket
+          command: |
+            aws cloudformation deploy --template-file createBucket.yml --parameter-overrides S3BucketName="newBucket-${CIRCLE_WORKFLOW_ID:0:7}" --stack-name createNewBucket-${CIRCLE_WORKFLOW_ID:0:7}
       - run: aws s3 sync . s3://newBucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
 
   get_last_deployment_id:
@@ -109,7 +109,7 @@ jobs:
       - checkout
       - run: yum install -y tar gzip
       - attach_workspace:
-        at: ~/
+          at: ~/
       - run:
           name: Destroy the previous S3 bucket. 
           command: |
