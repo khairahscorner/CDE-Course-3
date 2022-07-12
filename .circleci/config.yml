@@ -55,6 +55,10 @@ jobs:
             else
               return 1
             fi
+      - run:
+          when: on_fail
+          command: echo "This pipeline failed"
+
 workflows:
   workflow-1:
     jobs:
