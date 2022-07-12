@@ -35,8 +35,8 @@ jobs:
       - run:
           name: fetch instance DNS name
           command: |
-            echo "[all]" > inventory.txt
-            aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --filters "Name=tag:name, Values=Course3EC2" --output text >> inventory.txt
+            echo "[all]" > ~/inventory.txt
+            aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --filters "Name=tag:name, Values=Course3EC2" --output text >> ~/inventory.txt
       - persist_to_workspace:
           root:  ~/
           paths:
