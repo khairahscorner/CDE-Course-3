@@ -101,22 +101,22 @@ jobs:
             aws cloudformation deploy --template-file createBucket.yml --parameter-overrides S3BucketName="newbucket-${CIRCLE_WORKFLOW_ID:0:7}" --stack-name createNewBucket-${CIRCLE_WORKFLOW_ID:0:7}
       - run: aws s3 sync . s3://newbucket-${CIRCLE_WORKFLOW_ID:0:7} --delete
 
-  # get_last_deployment_id:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run: yum install -y tar gzip
-  #     - run:
-  #         name: Fetch and save the old pipeline ID (bucket name) responsible for the last release.
-  #         command: |
-  #           aws cloudformation list-exports --query "Exports[?Name==\`Pipeline-ID\`].Value" --no-paginate --output text > ~/textfile.txt
-  #           aws cloudformation list-exports --query "Exports[?Name==\`Stack-ID\`].Value" --no-paginate --output text > ~/stackfile.txt
-  #     - persist_to_workspace:
-  #         root: ~/
-  #         paths: 
-  #           - textfile.txt
-  #           - stackfile.txt
+  get_last_deployment_id:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - run:
+          name: Fetch and save the old pipeline ID (bucket name) responsible for the last release.
+          command: |
+            aws cloudformation list-exports --query "Exports[?Name==\`Pipeline-ID\`].Value" --no-paginate --output text > ~/textfile.txt
+            aws cloudformation list-exports --query "Exports[?Name==\`Stack-ID\`].Value" --no-paginate --output text > ~/stackfile.txt
+      - persist_to_workspace:
+          root: ~/
+          paths: 
+            - textfile.txt
+            - stackfile.txt
 
   promote_to_production:
     docker:
@@ -128,26 +128,26 @@ jobs:
           command: |
             aws cloudformation deploy --template-file createCloudfront.yml --stack-name production-distro --parameter-overrides S3BucketName="newbucket-${CIRCLE_WORKFLOW_ID:0:7}" StackName="createNewBucket-${CIRCLE_WORKFLOW_ID:0:7}"
   
-  # clean_up_old_deployment:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   steps:
-  #     - checkout
-  #     - run: yum install -y tar gzip
-  #     - attach_workspace:
-  #         at: ~/
-  #     - run:
-  #         name: Destroy previous S3 bucket
-  #         command: |
-  #           OldBucketID=$(cat ~/textfile.txt)
-  #           aws s3 rm "s3://${OldBucketID}" --recursive
-  #           aws s3api delete-bucket --bucket $OldBucketID
-  #     - run:
-  #         name: delete previous stack that created the bucket 
-  #         command: |
-  #           OldStack=$(cat ~/stackfile.txt)
-  #           echo "qwerty -- $OldStack"
-  #           aws cloudformation delete-stack --stack-name $OldStack
+  clean_up_old_deployment:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run: yum install -y tar gzip
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Destroy previous S3 bucket
+          command: |
+            OldBucketID=$(cat ~/textfile.txt)
+            aws s3 rm "s3://${OldBucketID}" --recursive
+            aws s3api delete-bucket --bucket $OldBucketID
+      - run:
+          name: delete previous stack that created the bucket 
+          command: |
+            OldStack=$(cat ~/stackfile.txt)
+            echo "qwerty -- $OldStack"
+            aws cloudformation delete-stack --stack-name $OldStack
 
 workflows:
   blue-green-workflow:
@@ -165,13 +165,13 @@ workflows:
       - create_new_bucket:
           requires:
             - configure_infra
-      # - get_last_deployment_id:
-      #     requires:
-      #       - configure_infra
+      - get_last_deployment_id:
+          requires:
+            - configure_infra
       - promote_to_production:
           requires: 
             - create_new_bucket
-      # - clean_up_old_deployment:
-      #     requires:
-      #       - get_last_deployment_id
-      #       - promote_to_production
+      - clean_up_old_deployment:
+          requires:
+            - get_last_deployment_id
+            - promote_to_production
