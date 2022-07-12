@@ -66,7 +66,6 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook main-remote.yml -i ~/project/inventory.txt
-      - destroy_infra
 
   run_smoke_tests:
     executor: aws-cli/default
@@ -161,10 +160,10 @@ workflows:
       - configure_infra:
           requires:
             - deploy_infra
-      # - run_smoke_tests:
-      #     requires:
-      #       - deploy_infra
-      #       - configure_infra
+      - run_smoke_tests:
+          requires:
+            - deploy_infra
+            - configure_infra
       
       # - create_new_bucket
       # - get_last_deployment_id
