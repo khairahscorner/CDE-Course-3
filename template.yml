@@ -23,6 +23,11 @@ Resources:
       - IpProtocol: tcp
         CidrIp: 0.0.0.0/0
         Description: allow access incoming traffic
+        FromPort: 80
+        ToPort: 80
+      - IpProtocol: tcp
+        CidrIp: 0.0.0.0/0
+        Description: allow access incoming traffic
         FromPort: 3000
         ToPort: 3000
       - IpProtocol: tcp
