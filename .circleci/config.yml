@@ -110,7 +110,7 @@ jobs:
       - run:
           name: Execute CloudFront template
           command: |
-            aws cloudformation deploy --template-file createCloudfront.yml --stack-name production-distro --parameter-overrides S3BucketName="newBucket-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation deploy --template-file createCloudfront.yml --stack-name production-distro --parameter-overrides S3BucketName="newbucket-${CIRCLE_WORKFLOW_ID:0:7}"
   
   delete_old_bucket:
     docker:
