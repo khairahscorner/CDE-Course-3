@@ -126,6 +126,7 @@ jobs:
             pwd && ls
             cat ~/textfile.txt
             export OldBucketID=$(cat ~/textfile.txt)
+            echo $OldBucketID
 
 # aws s3 rm "s3://${OldBucketID}" --recursive
 
