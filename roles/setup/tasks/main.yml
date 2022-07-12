@@ -24,16 +24,15 @@
       state: latest
 
   - name: "make new dir"
-    shell:
-      cmd: |
-        DIR="~/web"
-        if [ -d "$DIR" ]
-        then
-          echo "Directory already exists."
-        else
-          echo "Creating directory"
-          mkdir ~/web
-        fi
+    shell: |
+      if [ -d "~/web" ]
+      then
+        echo "Directory already exists."
+      else
+        echo "Creating directory"
+        mkdir ~/web
+      fi
+      exit 0
 
   - name: "copy server file"
     copy:
