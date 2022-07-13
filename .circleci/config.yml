@@ -137,6 +137,16 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+        name: Check for previous bucket
+        command: |
+          OldBucketID=$(cat ~/textfile.txt)
+          if [ $OldBucketID = "" ]
+          then
+            circleci-agent step halt
+          else
+            echo "Previous bucket exists"
+          fi
+      - run:
           name: Destroy previous S3 bucket
           command: |
             OldBucketID=$(cat ~/textfile.txt)
